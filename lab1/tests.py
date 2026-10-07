@@ -32,11 +32,6 @@ class TestValid(unittest.TestCase):
         ]:
             self.assert_ok(text)
 
-    def test_tree_shape(self):
-        tree = parse("2 + 3 * 4")
-        self.assertEqual(tree.label, "S")
-        self.assertEqual(len(tree.children), 1)
-
 
 class TestInvalid(unittest.TestCase):
     def assert_err(self, text, fragment):

@@ -2,12 +2,11 @@ import sys
 
 from errors import ParseError
 from parser import parse
-from tree import render_tree
 
 
 def analyze(text):
     try:
-        tree = parse(text)
+        parse(text)
     except ParseError as error:
         print(error)
         position = min(error.pos, len(error.text))
@@ -15,7 +14,6 @@ def analyze(text):
         print(" " * position + "^")
         return False
     print("Выражение корректно.")
-    print(render_tree(tree))
     return True
 
 
