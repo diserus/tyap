@@ -1,0 +1,8 @@
+states p q r
+alphabet 0 1
+start p
+accepting r
+transitions
+p 0 p
+p 1 p q
+q 1 r
