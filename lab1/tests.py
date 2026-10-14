@@ -1,7 +1,7 @@
 import unittest
 
 from errors import ParseError
-from parser import parse
+from parser import Node, format_tree, parse
 
 
 class TestValid(unittest.TestCase):
@@ -62,6 +62,57 @@ class TestInvalid(unittest.TestCase):
 
     def test_extra_paren(self):
         self.assert_err("1 + 2)", "конец выражения")
+
+
+class TestTree(unittest.TestCase):
+    def test_root(self):
+        tree = parse("1")
+        self.assertIsInstance(tree, Node)
+        self.assertEqual(tree.label, "S")
+
+    def test_leaf_values(self):
+        number = parse("3.14").children[0].children[0].children[0]
+        self.assertEqual(number.label, "F")
+        self.assertEqual(number.children[0].label, "number:3.14")
+        identifier = parse("abc").children[0].children[0].children[0]
+        self.assertEqual(identifier.children[0].label, "id:abc")
+
+    def test_precedence(self):
+        tree = parse("2 + 3 * 4")
+        expression = tree.children[0]
+        self.assertEqual(expression.label, "E")
+        term, tail = expression.children
+        self.assertEqual(term.label, "T")
+        self.assertEqual(tail.label, "E'")
+        operator, right_term, rest = tail.children
+        self.assertEqual(operator.label, "+")
+        self.assertEqual(right_term.label, "T")
+        self.assertEqual(rest.label, "E'")
+        right_term_tail = right_term.children[1]
+        self.assertEqual(right_term_tail.children[0].label, "*")
+
+    def test_parentheses(self):
+        tree = parse("(1)")
+        factor = tree.children[0].children[0].children[0]
+        self.assertEqual(factor.label, "F")
+        self.assertEqual([child.label for child in factor.children], ["(", "S", ")"])
+
+    def test_format_tree(self):
+        tree = parse("a")
+        expected = "\n".join(
+            [
+                "S",
+                "└── E",
+                "    ├── T",
+                "    │   ├── F",
+                "    │   │   └── id:a",
+                "    │   └── T'",
+                "    │       └── ε",
+                "    └── E'",
+                "        └── ε",
+            ]
+        )
+        self.assertEqual(format_tree(tree), expected)
 
 
 if __name__ == "__main__":
